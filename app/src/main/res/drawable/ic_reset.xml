@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Circular arrow indicating reset -->
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M13,3a9,9 0 0,0 -8.95,8h2.02a7,7 0 1,1 -0.08,2H2v-4h4v4H4.08A9,9 0 1,0 13,3z" />
+
+    <!-- Reset arrowhead -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,7l-3,3h2v4h2v-4h2l-3,-3z" />
+
+</vector>

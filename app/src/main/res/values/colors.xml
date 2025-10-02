@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="colorPrimary">#1976D2</color>
+    <color name="colorPrimaryDark">#1565C0</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="on_primary">#FFFFFF</color>
+    <color name="primary_container">#D1E4FF</color>
+    <color name="on_primary_container">#001D36</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#535E70</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="secondary_container">#D6E2F7</color>
+    <color name="on_secondary_container">#0F1A2B</color>
+
+    <!-- Surface Colors -->
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface">#1A1C1E</color>
+    <color name="surface_container">#F0F4F8</color>
+    <color name="surface_container_high">#E6EAEE</color>
+    <color name="on_surface_variant">#43474E</color>
+
+    <!-- Outline Colors -->
+    <color name="outline">#73777F</color>
+    <color name="outline_variant">#C3C7CF</color>
+
+    <!-- Semantic Colors -->
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="error">#F44336</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Background Colors -->
+    <color name="background">#FFFFFF</color>
+    <color name="background_light">#F0F4F8</color>
+    <color name="text_primary">#1A1C1E</color>
+    <color name="text_secondary">#43474E</color>
+
+    <!-- Bottom Navigation Colors -->
+    <color name="bottom_nav_selected">#1976D2</color>
+    <color name="bottom_nav_unselected">#757575</color>
+
+    <!-- Card and Component Colors -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="ripple">#1F1976D2</color>
+
+    <!-- Mood Colors -->
+    <color name="mood_very_happy">#4CAF50</color>
+    <color name="mood_happy">#8BC34A</color>
+    <color name="mood_neutral">#FFC107</color>
+    <color name="mood_sad">#FF9800</color>
+    <color name="mood_very_sad">#F44336</color>
+
+    <!-- Habit Streak Colors -->
+    <color name="streak_high">#4CAF50</color>
+    <color name="streak_medium">#FF9800</color>
+    <color name="streak_low">#757575</color>
+
+    <!-- Transparent Colors -->
+    <color name="transparent">#00000000</color>
+    <color name="semi_transparent">#80000000</color>
+    <color name="overlay">#40000000</color>
+
+
+    <color name="primary_color">#667eea</color>
+    <color name="primary_dark">#5a6fd8</color>
+    <color name="accent_color">#764ba2</color>
+
+    <!-- Text Colors -->
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="white">#FFFFFF</color>
+
+    <!-- Card Colors -->
+    <color name="card_shadow">#1A000000</color>
+
+    <!-- Status Colors -->
+    <color name="green_accent">#4CAF50</color>
+    <color name="error_color">#F44336</color>
+    <color name="error_background">#FFEBEE</color>
+    <color name="error_ripple">#FFCDD2</color>
+
+    <!-- Achievement Colors -->
+    <color name="achievement_background">#FFF3E0</color>
+    <color name="achievement_gold">#FFB300</color>
+    <color name="achievement_text">#E65100</color>
+    <color name="achievement_text_secondary">#FF8F00</color>
+
+    <!-- Ripple Effect -->
+    <color name="ripple_color">#33FFFFFF</color>
+
+</resources>

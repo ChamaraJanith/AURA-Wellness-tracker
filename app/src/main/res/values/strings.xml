@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Wellness Tracker</string>
+
+    <!-- Navigation -->
+    <string name="nav_habits">Habits</string>
+    <string name="nav_mood">Mood</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Habits -->
+    <string name="habits_title">Daily Habits</string>
+    <string name="add_habit">Add Habit</string>
+    <string name="edit_habit">Edit Habit</string>
+    <string name="delete_habit">Delete Habit</string>
+    <string name="habit_completed">Habit completed!</string>
+    <string name="no_habits">No habits yet</string>
+    <string name="habits_empty_message">Tap the + button to add your first habit</string>
+
+    <!-- Mood -->
+    <string name="mood_title">Mood Journal</string>
+    <string name="add_mood">Log Mood</string>
+    <string name="delete_mood">Delete Entry</string>
+    <string name="share_mood">Share Mood Summary</string>
+    <string name="no_moods">No mood entries yet</string>
+    <string name="mood_empty_message">Start tracking your mood with the + button</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="profile_section">Profile</string>
+    <string name="hydration_section">Hydration Reminders</string>
+    <string name="water_tracking_section">Water Tracking</string>
+    <string name="user_name_hint">Your Name</string>
+    <string name="enable_reminders">Enable Reminders</string>
+    <string name="reminder_interval">Reminder Interval</string>
+    <string name="daily_water_goal">Daily Goal (glasses)</string>
+    <string name="add_glass">Add Glass 💧</string>
+    <string name="save_settings">Save Settings</string>
+    <string name="settings_saved">Settings saved!</string>
+
+    <!-- Notifications -->
+    <string name="hydration_reminder_title">💧 Time to hydrate, %1$s!</string>
+    <string name="hydration_reminder_text">You\'ve had %1$d/%2$d glasses today. Stay hydrated!</string>
+    <string name="hydration_confirmation_title">Great job! 🎉</string>
+    <string name="hydration_confirmation_text">Water intake updated: %1$d/%2$d glasses</string>
+
+    <!-- General -->
+    <string name="add">Add</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="update">Update</string>
+    <string name="change">Change</string>
+    <string name="share">Share</string>
+    <string name="ok">OK</string>
+
+    <!-- Content Descriptions -->
+    <string name="edit_habit_desc">Edit habit</string>
+    <string name="delete_habit_desc">Delete habit</string>
+    <string name="delete_mood_desc">Delete mood entry</string>
+    <string name="add_button_desc">Add new item</string>
+
+    <!-- Error Messages -->
+    <string name="error_empty_name">Please enter a name</string>
+    <string name="error_invalid_target">Please enter a valid target</string>
+    <string name="no_mood_data">No mood data to share</string>
+
+    <!-- Time Intervals -->
+    <string name="interval_15_min">15 minutes</string>
+    <string name="interval_30_min">30 minutes</string>
+    <string name="interval_1_hour">1 hour</string>
+    <string name="interval_2_hours">2 hours</string>
+    <string name="interval_3_hours">3 hours</string>
+</resources>
