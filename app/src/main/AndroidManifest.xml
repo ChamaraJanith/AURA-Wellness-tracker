@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
-
     <!-- Notification Permissions (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -20,9 +19,6 @@
     <!-- Alarm Permissions (Android 12+) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
-
-    <!-- Physical activity permission for step counting -->
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:name=".WellnessApplication"
@@ -50,32 +46,35 @@
             </intent-filter>
         </activity>
 
-        <!-- Onboarding Screens -->
+        <!-- Onboarding Screen 1 -->
         <activity
             android:name=".OnboardingScreen1Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
+        <!-- Onboarding Screen 2 -->
         <activity
             android:name=".OnboardingScreen2Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
+        <!-- Onboarding Screen 3 -->
         <activity
             android:name=".OnboardingScreen3Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
-        <!-- Main Activity -->
+        <!-- Main Activity - Hosts all fragments including HomeFragment -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:windowSoftInputMode="adjustResize" />
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/AppTheme" />
 
         <!-- Services -->
         <service
@@ -108,7 +107,7 @@
                 android:resource="@xml/wellness_widget_info" />
         </receiver>
 
-        <!-- Provider for FileProvider (if needed for sharing) -->
+        <!-- Provider for FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

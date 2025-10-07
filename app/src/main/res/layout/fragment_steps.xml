@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/onboarding_gradient"
+    android:background="@drawable/splash_gradient"
     android:fillViewport="true"
     android:scrollbars="vertical">
 
@@ -21,55 +21,69 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Header Section -->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/header_section"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
             android:layout_marginTop="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/status_bar_spacer">
 
             <ImageView
+                android:id="@+id/iv_steps_icon"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:src="@drawable/ic_steps"
-                app:tint="@color/white"
-                android:layout_marginEnd="12dp" />
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/white" />
 
             <TextView
+                android:id="@+id/tv_header"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_marginStart="12dp"
                 android:text="Step Counter"
                 android:textColor="@color/white"
                 android:textSize="28sp"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/iv_sensor_status"
+                app:layout_constraintStart_toEndOf="@id/iv_steps_icon"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <ImageView
                 android:id="@+id/iv_sensor_status"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_sensor_active"
-                app:tint="@color/green_accent"
-                android:visibility="visible" />
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="#4CAF50" />
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Main Step Counter Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/card_main_counter"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
+            app:cardBackgroundColor="#30FFFFFF"
             app:cardCornerRadius="20dp"
             app:cardElevation="12dp"
-            app:cardBackgroundColor="@color/card_background"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/header_section">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/glassmorphism_background"
                 android:padding="24dp">
 
                 <!-- Circular Progress Container -->
@@ -77,9 +91,9 @@
                     android:id="@+id/progress_container"
                     android:layout_width="200dp"
                     android:layout_height="200dp"
-                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <!-- Background Circle -->
                     <ProgressBar
@@ -108,8 +122,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:orientation="vertical"
-                        android:gravity="center">
+                        android:gravity="center"
+                        android:orientation="vertical">
 
                         <!-- Step Count -->
                         <TextView
@@ -117,27 +131,27 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="0"
+                            android:textColor="@color/white"
                             android:textSize="36sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/background_light"/>
+                            android:textStyle="bold" />
 
                         <!-- Steps Label -->
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="steps"
-                            android:textSize="14sp"
-                            android:textColor="@color/secondary_text"/>
+                            android:textColor="#B3FFFFFF"
+                            android:textSize="14sp" />
 
                         <!-- Progress Percentage -->
                         <TextView
                             android:id="@+id/text_progress_percentage"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
                             android:text="0%"
-                            android:textSize="12sp"
-                            android:textColor="@color/accent_color"
-                            android:layout_marginTop="4dp"/>
+                            android:textColor="#4CAF50"
+                            android:textSize="12sp" />
 
                     </LinearLayout>
 
@@ -148,40 +162,40 @@
                     android:id="@+id/text_goal_info"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Goal: 10,000 steps"
-                    android:textSize="16sp"
-                    android:textColor="@color/secondary_text"
                     android:layout_marginTop="16dp"
-                    app:layout_constraintTop_toBottomOf="@id/progress_container"
+                    android:text="Goal: 10,000 steps"
+                    android:textColor="#B3FFFFFF"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent" />
+                    app:layout_constraintTop_toBottomOf="@id/progress_container" />
 
                 <!-- Real-time Status -->
                 <LinearLayout
                     android:id="@+id/realtime_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
                     android:layout_marginTop="8dp"
-                    app:layout_constraintTop_toBottomOf="@id/text_goal_info"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent">
+                    app:layout_constraintTop_toBottomOf="@id/text_goal_info">
 
                     <View
                         android:id="@+id/status_indicator"
                         android:layout_width="8dp"
                         android:layout_height="8dp"
-                        android:background="@drawable/status_indicator_active"
-                        android:layout_marginEnd="8dp" />
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/status_indicator_active" />
 
                     <TextView
                         android:id="@+id/text_realtime_status"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Real-time counting active"
-                        android:textSize="12sp"
-                        android:textColor="@color/green_accent"/>
+                        android:textColor="#4CAF50"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -192,27 +206,30 @@
         <!-- Statistics Row -->
         <LinearLayout
             android:id="@+id/stats_row"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/card_main_counter">
 
             <!-- Today's Distance Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="80dp"
-                android:layout_weight="1"
                 android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="#1A1A2E"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardElevation="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
+                    android:background="@drawable/gradient_card_steps"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="12dp">
 
                     <TextView
@@ -220,16 +237,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0.0 km"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary_text"/>
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Distance"
-                        android:textSize="12sp"
-                        android:textColor="@color/secondary_text"/>
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -239,17 +256,18 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="0dp"
                 android:layout_height="80dp"
-                android:layout_weight="1"
                 android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                app:cardBackgroundColor="#1A1A2E"
                 app:cardCornerRadius="12dp"
-                app:cardElevation="6dp"
-                app:cardBackgroundColor="@color/card_background">
+                app:cardElevation="6dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:orientation="vertical"
+                    android:background="@drawable/gradient_card_calories"
                     android:gravity="center"
+                    android:orientation="vertical"
                     android:padding="12dp">
 
                     <TextView
@@ -257,16 +275,16 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0 cal"
+                        android:textColor="@color/white"
                         android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/primary_text" />
+                        android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Calories"
-                        android:textSize="12sp"
-                        android:textColor="@color/secondary_text"/>
+                        android:textColor="#B3FFFFFF"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -277,10 +295,12 @@
         <!-- SCROLLABLE BUTTON SECTION -->
         <LinearLayout
             android:id="@+id/button_container"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:layout_marginTop="20dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/stats_row">
 
             <!-- Action Buttons Row 1 -->
@@ -295,28 +315,28 @@
                     android:id="@+id/button_add_steps"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
-                    android:layout_weight="1"
                     android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/button_primary"
+                    android:elevation="6dp"
                     android:text="Add Steps"
                     android:textColor="@color/white"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/button_primary"
-                    android:elevation="6dp" />
+                    android:textStyle="bold" />
 
                 <!-- Set Goal Button -->
                 <Button
                     android:id="@+id/button_set_goal"
                     android:layout_width="0dp"
                     android:layout_height="56dp"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/gradient_card_mood"
+                    android:elevation="6dp"
                     android:text="Set Goal"
-                    android:textColor="@color/primary_color"
+                    android:textColor="@color/white"
                     android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:background="@drawable/button_secondary"
-                    android:elevation="6dp" />
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
@@ -326,12 +346,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:layout_marginTop="16dp"
+                android:background="@drawable/gradient_button"
+                android:elevation="4dp"
                 android:text="Reset Today's Steps"
-                android:textColor="@color/error_color"
+                android:textColor="@color/white"
                 android:textSize="14sp"
-                android:textStyle="bold"
-                android:background="@drawable/button_danger"
-                android:elevation="4dp" />
+                android:textStyle="bold" />
 
             <!-- Achievement Banner -->
             <androidx.cardview.widget.CardView
@@ -340,23 +360,25 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:visibility="gone"
+                app:cardBackgroundColor="#30FFFFFF"
                 app:cardCornerRadius="12dp"
                 app:cardElevation="8dp"
-                app:cardBackgroundColor="@color/achievement_background">
+                tools:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:background="@drawable/glassmorphism_background"
                     android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     android:padding="16dp">
 
                     <ImageView
                         android:layout_width="40dp"
                         android:layout_height="40dp"
+                        android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_trophy"
-                        app:tint="@color/achievement_gold"
-                        android:layout_marginEnd="12dp" />
+                        app:tint="#FFC107" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -368,16 +390,16 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="🎉 Goal Achieved!"
+                            android:textColor="@color/white"
                             android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/achievement_text" />
+                            android:textStyle="bold" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Congratulations on reaching your daily goal!"
-                            android:textSize="12sp"
-                            android:textColor="@color/achievement_text_secondary" />
+                            android:textColor="#B3FFFFFF"
+                            android:textSize="12sp" />
 
                     </LinearLayout>
 

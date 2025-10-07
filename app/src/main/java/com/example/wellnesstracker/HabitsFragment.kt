@@ -1,4 +1,3 @@
-// HabitsFragment.kt
 package com.example.wellnesstracker
 
 import android.app.AlertDialog
@@ -10,6 +9,7 @@ import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -18,6 +18,8 @@ import com.example.wellnesstracker.models.Habit
 import com.example.wellnesstracker.utils.SharedPreferencesHelper
 
 class HabitsFragment : Fragment() {
+
+    private val viewModel: HomeViewModel by activityViewModels()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: HabitsAdapter
@@ -106,6 +108,9 @@ class HabitsFragment : Fragment() {
         if (habits.isEmpty()) {
             textProgress.text = "0 of 0 habits completed today"
             progressBar.progress = 0
+
+            // Update ViewModel
+            viewModel.updateHabitsCompletion(0, 0)
             return
         }
 
@@ -120,9 +125,16 @@ class HabitsFragment : Fragment() {
         textProgress.text = "$completedCount of $totalCount habits completed today"
         progressBar.progress = progressPercentage
 
+        // Update ViewModel to sync with HomeFragment
+        viewModel.updateHabitsCompletion(completedCount, totalCount)
+
         // Check if all habits are completed
         if (completedCount == totalCount && totalCount > 0) {
-            android.widget.Toast.makeText(requireContext(), "Amazing! You've completed all your habits for today!", android.widget.Toast.LENGTH_LONG).show()
+            android.widget.Toast.makeText(
+                requireContext(),
+                "Amazing! You've completed all your habits for today!",
+                android.widget.Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -181,9 +193,17 @@ class HabitsFragment : Fragment() {
 
                     updateEmptyView()
                     updateProgress()
-                    android.widget.Toast.makeText(requireContext(), "Habit added successfully!", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Habit added successfully!",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 } else {
-                    android.widget.Toast.makeText(requireContext(), "Please enter a habit name", android.widget.Toast.LENGTH_SHORT).show()
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Please enter a habit name",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -191,10 +211,13 @@ class HabitsFragment : Fragment() {
     }
 
     private fun showQuickAddDialog() {
-        // Simple dialog to quickly mark habits as done
         val incompleteHabits = habits.filter { !it.isCompletedToday() }
         if (incompleteHabits.isEmpty()) {
-            android.widget.Toast.makeText(requireContext(), "All habits completed for today!", android.widget.Toast.LENGTH_SHORT).show()
+            android.widget.Toast.makeText(
+                requireContext(),
+                "All habits completed for today!",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -216,7 +239,6 @@ class HabitsFragment : Fragment() {
     }
 
     private fun showAnalyticsDialog() {
-        // Show simple analytics about habit completion
         val totalHabits = habits.size
         val completedToday = habits.count { it.isCompletedToday() }
         val completionRate = if (totalHabits > 0) {
@@ -240,5 +262,11 @@ class HabitsFragment : Fragment() {
             .setMessage(message)
             .setPositiveButton("OK", null)
             .show()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadHabits()
+        updateProgress()
     }
 }

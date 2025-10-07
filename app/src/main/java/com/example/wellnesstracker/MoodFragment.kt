@@ -3,12 +3,12 @@ package com.example.wellnesstracker
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.mikephil.charting.charts.LineChart
@@ -25,6 +25,8 @@ import com.example.wellnesstracker.utils.SharedPreferencesHelper
 import com.example.wellnesstracker.utils.DateUtils
 
 class MoodFragment : Fragment() {
+
+    private val viewModel: HomeViewModel by activityViewModels()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MoodAdapter
@@ -133,6 +135,20 @@ class MoodFragment : Fragment() {
         adapter.notifyDataSetChanged()
         updateChart()
         updateEmptyView()
+        updateTodayMood()
+    }
+
+    private fun updateTodayMood() {
+        // Get today's most recent mood
+        val today = DateUtils.formatDate(System.currentTimeMillis())
+        val todayMoods = moodEntries.filter { it.date == today }
+
+        if (todayMoods.isNotEmpty()) {
+            val latestMood = todayMoods.first() // Already sorted by timestamp descending
+            viewModel.updateMood(latestMood.mood)
+        } else {
+            viewModel.updateMood("")
+        }
     }
 
     private fun updateChart() {
@@ -199,7 +215,11 @@ class MoodFragment : Fragment() {
         val editNote = dialogView.findViewById<EditText>(R.id.edit_mood_note)
 
         val moodOptions = MoodEntry.MOOD_OPTIONS.keys.toList()
-        val moodAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, moodOptions)
+        val moodAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            moodOptions
+        )
         moodAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerMood.adapter = moodAdapter
 
@@ -226,13 +246,18 @@ class MoodFragment : Fragment() {
                 recyclerView.scrollToPosition(0)
                 updateChart()
                 updateEmptyView()
+                updateTodayMood()
 
                 // Check if this is the first mood entry of the day
                 val todayMoods = allMoods.filter {
-                    it.date == com.example.wellnesstracker.utils.DateUtils.formatDate(System.currentTimeMillis())
+                    it.date == DateUtils.formatDate(System.currentTimeMillis())
                 }
                 if (todayMoods.size == 1) {
-                    android.widget.Toast.makeText(requireContext(), "Great start! You've logged your first mood of the day.", android.widget.Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Great start! You've logged your first mood of the day.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -254,6 +279,7 @@ class MoodFragment : Fragment() {
                     adapter.notifyItemRemoved(index)
                     updateChart()
                     updateEmptyView()
+                    updateTodayMood()
                 }
             }
             .setNegativeButton("Cancel", null)
@@ -290,5 +316,10 @@ class MoodFragment : Fragment() {
         }
 
         startActivity(Intent.createChooser(shareIntent, "Share mood summary"))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadMoodEntries()
     }
 }
