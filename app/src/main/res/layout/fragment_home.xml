@@ -202,8 +202,8 @@
                 <!-- Steps Count -->
                 <TextView
                     android:id="@+id/tvStepsCount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="35dp"
+                    android:layout_height="53dp"
                     android:layout_marginTop="8dp"
                     android:text="0"
                     android:textColor="@color/white"
@@ -237,6 +237,7 @@
                     app:layout_constraintBottom_toTopOf="@id/tvDistanceLabel"
                     app:layout_constraintStart_toStartOf="parent" />
 
+                <!-- Activity Minutes -->
                 <TextView
                     android:id="@+id/tvDistanceLabel"
                     android:layout_width="wrap_content"
@@ -247,7 +248,6 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />
 
-                <!-- Activity Minutes -->
                 <TextView
                     android:id="@+id/tvActivityMinutes"
                     android:layout_width="wrap_content"
