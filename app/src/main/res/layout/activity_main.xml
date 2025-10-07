@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5">
+    android:background="@drawable/splash_gradient">
 
     <!-- Header - Hidden by default, shown only for Home -->
     <LinearLayout
@@ -48,10 +48,22 @@
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@drawable/bottom_nav_background"
+        android:elevation="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:itemIconTint="@color/nav_item_color"
+        app:itemTextColor="@color/nav_item_color"
+        app:itemActiveIndicatorStyle="@style/ActiveIndicatorStyle"
+        app:itemRippleColor="@drawable/nav_item_ripple"
+        app:itemIconSize="28dp"
+        app:itemPaddingTop="8dp"
+        app:itemPaddingBottom="8dp"
+        app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_navigation"
-        app:itemIconTint="#1976D2"
-        app:itemTextColor="#757575"
-        app:elevation="8dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </LinearLayout>

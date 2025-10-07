@@ -103,6 +103,18 @@
                 android:resource="@xml/wellness_widget_info" />
         </receiver>
 
+        <!-- Step Counter Action Receiver -->
+        <receiver
+            android:name=".StepCounterActionReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="PAUSE_STEP_COUNTER" />
+                <action android:name="RESUME_STEP_COUNTER" />
+            </intent-filter>
+        </receiver>
+
+
         <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"

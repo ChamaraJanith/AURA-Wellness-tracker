@@ -8,6 +8,14 @@
         <item name="android:windowBackground">#F0F4F8</item>
     </style>
 
+    <style name="ActiveIndicatorStyle" parent="">
+        <item name="android:color">#2E3A50</item>
+        <item name="android:width">64dp</item>
+        <item name="android:height">32dp</item>
+        <item name="cornerRadius">16dp</item>
+    </style>
+
+
     <!-- Card Style -->
     <style name="WellnessCard" parent="CardView">
         <item name="cardCornerRadius">12dp</item>

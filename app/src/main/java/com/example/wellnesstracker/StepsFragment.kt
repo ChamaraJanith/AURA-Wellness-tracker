@@ -25,6 +25,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.wellnesstracker.services.StepCounterService
 import com.example.wellnesstracker.utils.SharedPreferencesHelper
+private lateinit var buttonPauseResume: Button
+private var isPaused = false
+
 
 class StepsFragment : Fragment() {
 
@@ -96,6 +99,7 @@ class StepsFragment : Fragment() {
             buttonAddSteps = view.findViewById(R.id.button_add_steps)
             buttonSetGoal = view.findViewById(R.id.button_set_goal)
             buttonReset = view.findViewById(R.id.button_reset)
+            buttonPauseResume = view.findViewById(R.id.button_pause_resume)
             achievementBanner = view.findViewById(R.id.achievement_banner)
             textRealtimeStatus = view.findViewById(R.id.text_realtime_status)
             statusIndicator = view.findViewById(R.id.status_indicator)
@@ -103,14 +107,63 @@ class StepsFragment : Fragment() {
             buttonAddSteps.setOnClickListener { showAddStepsDialog() }
             buttonSetGoal.setOnClickListener { showSetGoalDialog() }
             buttonReset.setOnClickListener { showResetDialog() }
+            buttonPauseResume.setOnClickListener { togglePauseResume() }
+
+            // Update button state on load
+            updatePauseResumeButton()
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
+    private fun togglePauseResume() {
+        isPaused = prefsHelper.isStepCounterPaused()
+
+        if (isPaused) {
+            // Resume
+            prefsHelper.setStepCounterPaused(false)
+            if (hasSensorSupport) {
+                StepCounterService.startService(requireContext())
+            }
+            Toast.makeText(requireContext(), "▶️ Step counter resumed", Toast.LENGTH_SHORT).show()
+        } else {
+            // Pause
+            prefsHelper.setStepCounterPaused(true)
+            StepCounterService.stopService(requireContext())
+            Toast.makeText(requireContext(), "⏸️ Step counter paused", Toast.LENGTH_SHORT).show()
+        }
+
+        updatePauseResumeButton()
+        updateSensorStatus()
+    }
+
+    private fun updatePauseResumeButton() {
+        try {
+            isPaused = prefsHelper.isStepCounterPaused()
+
+            if (isPaused) {
+                buttonPauseResume.text = "▶️ Resume"
+                buttonPauseResume.setBackgroundResource(R.drawable.gradient_card_steps)
+            } else {
+                buttonPauseResume.text = "⏸️ Pause"
+                buttonPauseResume.setBackgroundResource(R.drawable.gradient_card_water)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+
+
     private fun updateSensorStatus() {
         try {
-            if (hasSensorSupport) {
+            isPaused = prefsHelper.isStepCounterPaused()
+
+            if (isPaused) {
+                textRealtimeStatus.text = "Counting paused"
+                textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange_accent))
+                statusIndicator.setBackgroundResource(R.drawable.status_indicator_inactive)
+            } else if (hasSensorSupport) {
                 textRealtimeStatus.text = "Real-time counting active"
                 textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.green_accent))
                 statusIndicator.setBackgroundResource(R.drawable.status_indicator_active)
@@ -128,6 +181,7 @@ class StepsFragment : Fragment() {
             e.printStackTrace()
         }
     }
+
 
     private fun showSensorUnavailableDialog() {
         AlertDialog.Builder(requireContext())
@@ -243,12 +297,15 @@ class StepsFragment : Fragment() {
         super.onResume()
         try {
             updateUI()
+            updatePauseResumeButton()
+            updateSensorStatus()
             registerStepUpdateReceiver()
             startPeriodicUpdate()
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
+
 
     override fun onPause() {
         super.onPause()

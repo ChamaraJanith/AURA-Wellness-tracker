@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.wellnesstracker.MainActivity
 import com.example.wellnesstracker.R
+import com.example.wellnesstracker.StepCounterActionReceiver
 import com.example.wellnesstracker.utils.SharedPreferencesHelper
 
 class StepCounterService : Service(), SensorEventListener {
@@ -56,6 +57,44 @@ class StepCounterService : Service(), SensorEventListener {
         fun stopService(context: Context) {
             val intent = Intent(context, StepCounterService::class.java)
             context.stopService(intent)
+
+            // Show paused notification
+            showPausedNotification(context)
+        }
+
+        private fun showPausedNotification(context: Context) {
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val prefsHelper = SharedPreferencesHelper(context)
+
+            val intent = Intent(context, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(
+                context, 0, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            // Resume action
+            val resumeIntent = Intent(context, StepCounterActionReceiver::class.java).apply {
+                action = "RESUME_STEP_COUNTER"
+            }
+            val resumePendingIntent = PendingIntent.getBroadcast(
+                context, 0, resumeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+
+            val steps = prefsHelper.getSteps()
+            val goal = prefsHelper.getStepsGoal()
+
+            val notification = NotificationCompat.Builder(context, CHANNEL_ID)
+                .setContentTitle("⏸️ Step Counter Paused")
+                .setContentText("$steps / $goal steps • Tap Resume to continue")
+                .setSmallIcon(R.drawable.ic_steps)
+                .setContentIntent(pendingIntent)
+                .addAction(R.drawable.ic_play, "Resume", resumePendingIntent)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(false)
+                .build()
+
+            notificationManager.notify(NOTIFICATION_ID, notification)
         }
     }
 
@@ -285,11 +324,21 @@ class StepCounterService : Service(), SensorEventListener {
             "$progress% of daily goal • Keep moving!"
         }
 
+        // Pause action
+        val pauseIntent = Intent(this, StepCounterActionReceiver::class.java).apply {
+            action = "PAUSE_STEP_COUNTER"
+        }
+        val pausePendingIntent = PendingIntent.getBroadcast(
+            this, 0, pauseIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Steps: $steps / $goal")
             .setContentText(contentText)
             .setSmallIcon(R.drawable.ic_steps)
             .setContentIntent(pendingIntent)
+            .addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)
             .setOngoing(true)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setProgress(100, progress, false)

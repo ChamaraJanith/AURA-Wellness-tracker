@@ -190,6 +190,15 @@ class SharedPreferencesHelper(context: Context) {
         prefs.edit().putBoolean("shown_sensor_warning", shown).apply()
     }
 
+    // Step counter pause state
+    fun isStepCounterPaused(): Boolean =
+        prefs.getBoolean("step_counter_paused", false)
+
+    fun setStepCounterPaused(paused: Boolean) {
+        prefs.edit().putBoolean("step_counter_paused", paused).apply()
+    }
+
+
 
     fun saveMoodEntries(moodEntries: List<MoodEntry>) {
         val json = gson.toJson(moodEntries)

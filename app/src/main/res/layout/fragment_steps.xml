@@ -11,7 +11,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:paddingBottom="100dp">
 
         <!-- Status Bar Spacer -->
         <View
@@ -292,7 +293,7 @@
 
         </LinearLayout>
 
-        <!-- SCROLLABLE BUTTON SECTION -->
+        <!-- BUTTON SECTION -->
         <LinearLayout
             android:id="@+id/button_container"
             android:layout_width="0dp"
@@ -340,18 +341,43 @@
 
             </LinearLayout>
 
-            <!-- Reset Button (Row 2) -->
-            <Button
-                android:id="@+id/button_reset"
+            <!-- Action Buttons Row 2 -->
+            <LinearLayout
+                android:id="@+id/button_row_2"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:background="@drawable/gradient_button"
-                android:elevation="4dp"
-                android:text="Reset Today's Steps"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:orientation="horizontal">
+
+                <!-- Pause/Resume Button -->
+                <Button
+                    android:id="@+id/button_pause_resume"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/gradient_card_water"
+                    android:elevation="6dp"
+                    android:text="⏸️ Pause"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <!-- Reset Button -->
+                <Button
+                    android:id="@+id/button_reset"
+                    android:layout_width="0dp"
+                    android:layout_height="56dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/gradient_button"
+                    android:elevation="4dp"
+                    android:text="Reset"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
             <!-- Achievement Banner -->
             <androidx.cardview.widget.CardView

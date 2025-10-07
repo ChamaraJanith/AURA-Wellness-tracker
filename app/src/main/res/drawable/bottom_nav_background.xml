@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/surface" />
-    <corners
-        android:topLeftRadius="20dp"
-        android:topRightRadius="20dp" />
-</shape>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Blur background -->
+    <item>
+        <shape>
+            <solid android:color="#CC1E293B" />
+            <corners
+                android:topLeftRadius="24dp"
+                android:topRightRadius="24dp" />
+        </shape>
+    </item>
+    <!-- Top border accent -->
+    <item android:top="0dp" android:bottom="-2dp">
+        <shape>
+            <stroke android:width="2dp" android:color="#3F6366F1" />
+            <corners
+                android:topLeftRadius="24dp"
+                android:topRightRadius="24dp" />
+        </shape>
+    </item>
+</layer-list>

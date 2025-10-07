@@ -105,7 +105,14 @@
     <color name="heart_bg">#FFEBEE</color>
     <color name="progress_track">#40FFFFFF</color>
     <color name="progress_background">#E0E0E0</color>
+    <color name="black">#000000</color>
 
+    <!-- Navigation colors -->
+    <color name="nav_background">#1E293B</color>
+    <color name="nav_active">#6366F1</color>
+    <color name="nav_inactive">#94A3B8</color>
+    <color name="nav_indicator">#2E3A50</color>
 
+    <!-- Accent colors -->
 
     </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -153,7 +154,7 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- Steps Card - FIXED -->
+        <!-- Steps Card -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardSteps"
             android:layout_width="0dp"
@@ -198,25 +199,25 @@
                     app:layout_constraintStart_toEndOf="@id/ivSteps"
                     app:layout_constraintTop_toTopOf="@id/ivSteps" />
 
-                <!-- Steps Count (Large) -->
-
-                <!-- Steps Goal -->
+                <!-- Steps Count -->
                 <TextView
                     android:id="@+id/tvStepsCount"
-                    android:layout_width="36dp"
-                    android:layout_height="65dp"
-                    android:layout_marginTop="4dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
                     android:text="0"
                     android:textColor="@color/white"
-                    android:textSize="56sp"
+                    android:textSize="48sp"
                     android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/ivSteps" />
 
+                <!-- Steps Goal -->
                 <TextView
                     android:id="@+id/tvStepsGoal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
                     android:text="of 10,000 steps"
                     android:textColor="#B3FFFFFF"
                     android:textSize="14sp"
@@ -315,9 +316,9 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toStartOf="@id/cardWater"
+            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardSteps"
-            app:layout_constraintWidth_percent="0.465">
+            app:layout_constraintTop_toBottomOf="@id/cardSteps">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -386,9 +387,9 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/cardCalories"
-            app:layout_constraintTop_toTopOf="@id/cardCalories"
-            app:layout_constraintWidth_percent="0.465">
+            app:layout_constraintTop_toTopOf="@id/cardCalories">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -458,9 +459,9 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toStartOf="@id/cardMood"
+            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cardCalories"
-            app:layout_constraintWidth_percent="0.465">
+            app:layout_constraintTop_toBottomOf="@id/cardCalories">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -529,9 +530,9 @@
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@id/cardHabits"
-            app:layout_constraintTop_toTopOf="@id/cardHabits"
-            app:layout_constraintWidth_percent="0.465">
+            app:layout_constraintTop_toTopOf="@id/cardHabits">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -581,4 +582,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-</ScrollView>
+</androidx.core.widget.NestedScrollView>
