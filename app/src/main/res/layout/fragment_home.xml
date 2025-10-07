@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -158,9 +157,9 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/cardSteps"
             android:layout_width="0dp"
-            android:layout_height="200dp"
+            android:layout_height="260dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:layout_marginEnd="16dp"
             app:cardBackgroundColor="#1A1A2E"
             app:cardCornerRadius="20dp"
@@ -202,9 +201,9 @@
                 <!-- Steps Count -->
                 <TextView
                     android:id="@+id/tvStepsCount"
-                    android:layout_width="35dp"
-                    android:layout_height="53dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
                     android:text="0"
                     android:textColor="@color/white"
                     android:textSize="48sp"
@@ -229,47 +228,50 @@
                     android:id="@+id/tvDistance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="2dp"
+                    android:layout_marginTop="28dp"
                     android:text="0.0 km"
                     android:textColor="#4CAF50"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toTopOf="@id/tvDistanceLabel"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvStepsGoal" />
 
-                <!-- Activity Minutes -->
                 <TextView
                     android:id="@+id/tvDistanceLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:paddingBottom="4dp"
                     android:text="Distance"
                     android:textColor="#80FFFFFF"
                     android:textSize="11sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/tvDistance" />
 
+                <!-- Activity Minutes -->
                 <TextView
                     android:id="@+id/tvActivityMinutes"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="48dp"
+                    android:layout_marginStart="56dp"
                     android:text="0 min"
                     android:textColor="#4CAF50"
                     android:textSize="16sp"
                     android:textStyle="bold"
-                    app:layout_constraintBottom_toTopOf="@id/tvActiveLabel"
-                    app:layout_constraintStart_toEndOf="@id/tvDistance" />
+                    app:layout_constraintStart_toEndOf="@id/tvDistance"
+                    app:layout_constraintTop_toTopOf="@id/tvDistance" />
 
                 <TextView
                     android:id="@+id/tvActiveLabel"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="48dp"
+                    android:layout_marginStart="56dp"
+                    android:paddingBottom="4dp"
                     android:text="Active"
                     android:textColor="#80FFFFFF"
                     android:textSize="11sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/tvDistanceLabel" />
+                    app:layout_constraintStart_toEndOf="@id/tvDistanceLabel"
+                    app:layout_constraintTop_toTopOf="@id/tvDistanceLabel" />
 
                 <!-- Circular Progress -->
                 <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -310,12 +312,13 @@
             android:layout_width="0dp"
             android:layout_height="140dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="6dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
             app:cardBackgroundColor="#1A1A2E"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toStartOf="@id/cardWater"
+            app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cardSteps">
@@ -381,7 +384,7 @@
             android:id="@+id/cardWater"
             android:layout_width="0dp"
             android:layout_height="140dp"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             app:cardBackgroundColor="#1A1A2E"
             app:cardCornerRadius="20dp"
@@ -451,14 +454,15 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/cardHabits"
             android:layout_width="0dp"
-            android:layout_height="140dp"
+            android:layout_height="180dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="6dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
             app:cardBackgroundColor="#1A1A2E"
             app:cardCornerRadius="20dp"
             app:cardElevation="8dp"
             app:layout_constraintEnd_toStartOf="@id/cardMood"
+            app:layout_constraintHorizontal_chainStyle="spread"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/cardCalories">
@@ -523,8 +527,8 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/cardMood"
             android:layout_width="0dp"
-            android:layout_height="140dp"
-            android:layout_marginStart="6dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             app:cardBackgroundColor="#1A1A2E"
             app:cardCornerRadius="20dp"
