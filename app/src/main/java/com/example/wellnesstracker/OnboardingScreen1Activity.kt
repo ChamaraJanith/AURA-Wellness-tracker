@@ -5,14 +5,19 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.wellnesstracker.utils.SharedPreferencesHelper
 import com.example.wellnesstracker.utils.TransitionUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class OnboardingScreen1Activity : AppCompatActivity() {
 
+    private lateinit var prefsHelper: SharedPreferencesHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.onboarding_screen_1)
+
+        prefsHelper = SharedPreferencesHelper(this)
 
         try {
             Log.d("Onboarding1", "Finding views")
@@ -21,7 +26,7 @@ class OnboardingScreen1Activity : AppCompatActivity() {
 
             skipButton?.setOnClickListener {
                 Log.d("Onboarding1", "Skip clicked")
-                goToMainActivity()
+                skipToLogin()
             }
 
             nextButton?.setOnClickListener {
@@ -33,7 +38,7 @@ class OnboardingScreen1Activity : AppCompatActivity() {
         } catch (e: Exception) {
             Log.e("Onboarding1", "Error in onCreate: ${e.message}")
             e.printStackTrace()
-            goToMainActivity()
+            skipToLogin()
         }
     }
 
@@ -41,24 +46,35 @@ class OnboardingScreen1Activity : AppCompatActivity() {
         try {
             Log.d("Onboarding1", "Navigating to OnboardingScreen2")
             TransitionUtils.navigateWithSlideTransition(this, OnboardingScreen2Activity::class.java)
+            finish()
         } catch (e: Exception) {
             Log.e("Onboarding1", "Error navigating to OnboardingScreen2: ${e.message}")
-            goToMainActivity()
+            skipToLogin()
         }
     }
 
-    private fun goToMainActivity() {
+    private fun skipToLogin() {
         try {
-            Log.d("Onboarding1", "Navigating to MainActivity")
-            TransitionUtils.navigateWithFadeTransition(this, MainActivity::class.java)
+            Log.d("Onboarding1", "Skipping to Login")
+
+            // Mark onboarding as completed
+            prefsHelper.setOnboardingCompleted(true)
+
+            // Navigate to Login
+            TransitionUtils.navigateWithFadeTransition(this, LoginActivity::class.java)
+            finish()
         } catch (e: Exception) {
-            Log.e("Onboarding1", "Error navigating to MainActivity: ${e.message}")
+            Log.e("Onboarding1", "Error navigating to Login: ${e.message}")
+
+            // Fallback navigation
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
             finish()
         }
     }
 
     override fun onBackPressed() {
-        // If on first screen, go to main activity instead of closing app
-        goToMainActivity()
+        // Go back to splash or exit
+        finish()
     }
 }

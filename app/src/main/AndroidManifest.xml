@@ -28,7 +28,7 @@
         android:largeHeap="true"
         tools:targetApi="34">
 
-        <!-- Splash Screen - LAUNCHER -->
+        <!-- Splash Screen - LAUNCHER (Entry Point) -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
@@ -59,6 +59,20 @@
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
+        <!-- Login Screen -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
+        <!-- Register Screen -->
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+
         <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
@@ -78,7 +92,8 @@
         <service
             android:name=".services.StepCounterService"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
 
         <!-- Receivers -->
         <receiver
@@ -113,7 +128,6 @@
                 <action android:name="RESUME_STEP_COUNTER" />
             </intent-filter>
         </receiver>
-
 
         <!-- FileProvider -->
         <provider

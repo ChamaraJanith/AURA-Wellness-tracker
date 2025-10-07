@@ -17,12 +17,41 @@ class SharedPreferencesHelper(context: Context) {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     private val today: String get() = dateFormat.format(Date())
 
+    // ============ USER AUTHENTICATION ============
+
+    fun isLoggedIn(): Boolean = prefs.getBoolean("is_logged_in", false)
+
+    fun setLoggedIn(loggedIn: Boolean) {
+        prefs.edit().putBoolean("is_logged_in", loggedIn).apply()
+    }
+
+    fun getUserName(): String = prefs.getString("user_name", "User") ?: "User"
+
+    fun setUserName(name: String) {
+        prefs.edit().putString("user_name", name).apply()
+    }
+
+    fun getUserEmail(): String = prefs.getString("user_email", "") ?: ""
+
+    fun setUserEmail(email: String) {
+        prefs.edit().putString("user_email", email).apply()
+    }
+
+    fun getUserPassword(): String = prefs.getString("user_password", "") ?: ""
+
+    fun setUserPassword(password: String) {
+        prefs.edit().putString("user_password", password).apply()
+    }
+
+    fun logout() {
+        prefs.edit().putBoolean("is_logged_in", false).apply()
+    }
+
     // ============ HYDRATION TRACKING ============
 
     fun getHydrationCount(): Int {
         val lastUpdateDate = prefs.getString("hydration_last_update", "")
 
-        // Reset count if last update was not today
         if (lastUpdateDate != today) {
             prefs.edit().putInt("hydration_count", 0).apply()
             prefs.edit().putString("hydration_last_update", today).apply()
@@ -69,7 +98,6 @@ class SharedPreferencesHelper(context: Context) {
     fun getSteps(): Int {
         val lastUpdateDate = prefs.getString("steps_last_update", "")
 
-        // Reset count if last update was not today
         if (lastUpdateDate != today) {
             prefs.edit().putInt("steps_count", 0).apply()
             prefs.edit().putString("steps_last_update", today).apply()
@@ -136,12 +164,18 @@ class SharedPreferencesHelper(context: Context) {
         prefs.edit().putBoolean("first_time", firstTime).apply()
     }
 
-    // ============ USER PROFILE ============
+    fun hasShownSensorWarning(): Boolean =
+        prefs.getBoolean("shown_sensor_warning", false)
 
-    fun getUserName(): String = prefs.getString("user_name", "User") ?: "User"
+    fun setShownSensorWarning(shown: Boolean) {
+        prefs.edit().putBoolean("shown_sensor_warning", shown).apply()
+    }
 
-    fun setUserName(name: String) {
-        prefs.edit().putString("user_name", name).apply()
+    fun isStepCounterPaused(): Boolean =
+        prefs.getBoolean("step_counter_paused", false)
+
+    fun setStepCounterPaused(paused: Boolean) {
+        prefs.edit().putBoolean("step_counter_paused", paused).apply()
     }
 
     // ============ DAILY GOALS ============
@@ -181,24 +215,6 @@ class SharedPreferencesHelper(context: Context) {
             emptyList()
         }
     }
-
-    // Sensor warning
-    fun hasShownSensorWarning(): Boolean =
-        prefs.getBoolean("shown_sensor_warning", false)
-
-    fun setShownSensorWarning(shown: Boolean) {
-        prefs.edit().putBoolean("shown_sensor_warning", shown).apply()
-    }
-
-    // Step counter pause state
-    fun isStepCounterPaused(): Boolean =
-        prefs.getBoolean("step_counter_paused", false)
-
-    fun setStepCounterPaused(paused: Boolean) {
-        prefs.edit().putBoolean("step_counter_paused", paused).apply()
-    }
-
-
 
     fun saveMoodEntries(moodEntries: List<MoodEntry>) {
         val json = gson.toJson(moodEntries)

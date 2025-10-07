@@ -22,4 +22,5 @@
         android:id="@+id/nav_steps"
         android:icon="@drawable/ic_steps"
         android:title="Steps" />
+
 </menu>

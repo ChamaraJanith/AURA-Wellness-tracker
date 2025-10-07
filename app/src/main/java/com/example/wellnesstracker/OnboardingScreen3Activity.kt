@@ -5,14 +5,19 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.example.wellnesstracker.utils.SharedPreferencesHelper
 import com.example.wellnesstracker.utils.TransitionUtils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class OnboardingScreen3Activity : AppCompatActivity() {
 
+    private lateinit var prefsHelper: SharedPreferencesHelper
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.onboarding_screen_3)
+
+        prefsHelper = SharedPreferencesHelper(this)
 
         try {
             Log.d("Onboarding3", "Finding views")
@@ -21,28 +26,38 @@ class OnboardingScreen3Activity : AppCompatActivity() {
 
             skipButton?.setOnClickListener {
                 Log.d("Onboarding3", "Skip clicked")
-                goToMainActivity()
+                completeOnboarding()
             }
 
             getStartedButton?.setOnClickListener {
                 Log.d("Onboarding3", "Get Started clicked")
-                goToMainActivity()
+                completeOnboarding()
             }
 
             Log.d("Onboarding3", "Setup complete")
         } catch (e: Exception) {
             Log.e("Onboarding3", "Error in onCreate: ${e.message}")
             e.printStackTrace()
-            goToMainActivity()
+            completeOnboarding()
         }
     }
 
-    private fun goToMainActivity() {
+    private fun completeOnboarding() {
         try {
-            Log.d("Onboarding3", "Navigating to MainActivity")
-            TransitionUtils.navigateWithFadeTransition(this, MainActivity::class.java)
+            Log.d("Onboarding3", "Completing onboarding and navigating to Login")
+
+            // Mark onboarding as completed
+            prefsHelper.setOnboardingCompleted(true)
+
+            // Navigate to Login screen
+            TransitionUtils.navigateWithFadeTransition(this, LoginActivity::class.java)
+            finish()
         } catch (e: Exception) {
-            Log.e("Onboarding3", "Error navigating to MainActivity: ${e.message}")
+            Log.e("Onboarding3", "Error completing onboarding: ${e.message}")
+
+            // Fallback navigation
+            val intent = Intent(this, LoginActivity::class.java)
+            startActivity(intent)
             finish()
         }
     }
@@ -51,9 +66,10 @@ class OnboardingScreen3Activity : AppCompatActivity() {
         try {
             Log.d("Onboarding3", "Back pressed, going to OnboardingScreen2")
             TransitionUtils.navigateWithSlideTransition(this, OnboardingScreen2Activity::class.java, false)
+            finish()
         } catch (e: Exception) {
             Log.e("Onboarding3", "Error navigating back: ${e.message}")
-            goToMainActivity()
+            super.onBackPressed()
         }
     }
 }
