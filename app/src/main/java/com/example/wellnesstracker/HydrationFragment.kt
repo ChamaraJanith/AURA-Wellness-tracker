@@ -1,38 +1,50 @@
 package com.example.wellnesstracker
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import com.example.wellnesstracker.utils.SharedPreferencesHelper
 
 class HydrationFragment : Fragment() {
 
-    private val viewModel: HomeViewModel by activityViewModels()
-
+    private lateinit var prefsHelper: SharedPreferencesHelper
     private lateinit var textWaterProgress: TextView
     private lateinit var progressWater: ProgressBar
     private lateinit var tvWaterGoal: TextView
     private lateinit var buttonAddWater: Button
     private lateinit var buttonSetReminder: Button
 
+    private var waterCount = 0
+    private var waterGoal = 8
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_hydration, container, false)
+        return inflater.inflate(R.layout.fragment_hydration, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        prefsHelper = SharedPreferencesHelper(requireContext())
 
         initializeViews(view)
-        setupObservers()
-        setupClickListeners()
+        loadHydrationData()
+        updateUI()
 
-        return view
+        buttonAddWater.setOnClickListener {
+            addWaterGlass()
+        }
+
+        buttonSetReminder.setOnClickListener {
+            showReminderSettingsDialog()
+        }
     }
 
     private fun initializeViews(view: View) {
@@ -43,38 +55,117 @@ class HydrationFragment : Fragment() {
         buttonSetReminder = view.findViewById(R.id.button_set_reminder)
     }
 
-    private fun setupObservers() {
-        viewModel.waterData.observe(viewLifecycleOwner) { water ->
-            textWaterProgress.text = "${water.current} / ${water.goal} glasses today"
-            tvWaterGoal.text = "Goal: ${water.goal} glasses"
-            progressWater.max = water.goal
-            progressWater.progress = water.current
+    private fun loadHydrationData() {
+        waterCount = prefsHelper.getHydrationCount()
+        waterGoal = prefsHelper.getHydrationGoal()
+    }
+
+    private fun updateUI() {
+        textWaterProgress.text = "$waterCount / $waterGoal"
+        tvWaterGoal.text = "Goal: $waterGoal glasses"
+
+        progressWater.max = waterGoal
+        progressWater.progress = waterCount
+
+        // Update button text based on reminder status
+        if (prefsHelper.isHydrationReminderEnabled()) {
+            buttonSetReminder.text = "⏰ Reminder Active"
+        } else {
+            buttonSetReminder.text = "⏰ Reminder Settings"
         }
     }
 
-    private fun setupClickListeners() {
-        buttonAddWater.setOnClickListener {
-            android.util.Log.d("HydrationFragment", "Add water clicked")
-            viewModel.addWaterGlass()
-            val current = viewModel.waterData.value?.current ?: 0
+    private fun addWaterGlass() {
+        waterCount++
+        prefsHelper.saveHydrationCount(waterCount)
+        updateUI()
+
+        if (waterCount >= waterGoal) {
             Toast.makeText(
                 requireContext(),
-                "Glass added! Total: $current glasses",
+                "🎉 Congratulations! You've reached your hydration goal!",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Great! ${waterGoal - waterCount} more to go!",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    private fun showReminderSettingsDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_hydration_reminder, null)
+
+        val switchReminder = dialogView.findViewById<Switch>(R.id.switch_reminder)
+        val spinnerInterval = dialogView.findViewById<Spinner>(R.id.spinner_interval)
+        val editGoal = dialogView.findViewById<EditText>(R.id.edit_goal)
+
+        // Set current values
+        switchReminder.isChecked = prefsHelper.isHydrationReminderEnabled()
+        editGoal.setText(waterGoal.toString())
+
+        // Interval options (in minutes)
+        val intervals = arrayOf("30 minutes", "1 hour", "2 hours", "3 hours", "4 hours")
+        val intervalValues = arrayOf(30, 60, 120, 180, 240)
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            intervals
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerInterval.adapter = adapter
+
+        // Set current interval
+        val currentInterval = prefsHelper.getHydrationReminderInterval()
+        val intervalIndex = intervalValues.indexOf(currentInterval)
+        if (intervalIndex >= 0) {
+            spinnerInterval.setSelection(intervalIndex)
         }
 
-        buttonSetReminder.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Reminder settings coming soon!",
-                Toast.LENGTH_SHORT
-            ).show()
-        }
+        AlertDialog.Builder(requireContext())
+            .setTitle("Hydration Reminder Settings")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val isEnabled = switchReminder.isChecked
+                val selectedInterval = intervalValues[spinnerInterval.selectedItemPosition]
+                val newGoal = editGoal.text.toString().toIntOrNull() ?: 8
+
+                // Save settings
+                prefsHelper.setHydrationReminderEnabled(isEnabled)
+                prefsHelper.setHydrationReminderInterval(selectedInterval)
+                prefsHelper.saveHydrationGoal(newGoal)
+
+                waterGoal = newGoal
+                updateUI()
+
+                // Start or stop service based on settings
+                if (isEnabled) {
+                    HydrationReminderService.startService(requireContext())
+                    Toast.makeText(
+                        requireContext(),
+                        "Reminder enabled! You'll be notified every ${intervals[spinnerInterval.selectedItemPosition]}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    HydrationReminderService.stopService(requireContext())
+                    Toast.makeText(
+                        requireContext(),
+                        "Reminder disabled",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     override fun onResume() {
         super.onResume()
-        viewModel.refreshData()
+        loadHydrationData()
+        updateUI()
     }
 }

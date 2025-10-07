@@ -7,20 +7,45 @@
     android:layout_height="match_parent"
     android:background="@drawable/splash_gradient">
 
-    <!-- Header -->
-    <TextView
-        android:id="@+id/tv_header"
-        android:layout_width="wrap_content"
+    <!-- Header with FAB inline -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_section"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
-        android:letterSpacing="0.02"
-        android:text="Mood Tracker"
-        android:textColor="@color/white"
-        android:textSize="32sp"
-        android:textStyle="bold"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tv_header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.02"
+            android:text="Mood Tracker"
+            android:textColor="@color/white"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- FAB in header -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_mood"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add"
+            app:backgroundTint="#FFC107"
+            app:fabSize="normal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Chart Card -->
     <androidx.cardview.widget.CardView
@@ -35,7 +60,7 @@
         app:cardElevation="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_header">
+        app:layout_constraintTop_toBottomOf="@id/header_section">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -47,11 +72,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mood Trend (Last 7 Days)"
+                android:layout_marginBottom="12dp"
+                android:text="Mood Trend"
                 android:textColor="@color/white"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp" />
+                android:textStyle="bold" />
 
             <com.github.mikephil.charting.charts.LineChart
                 android:id="@+id/mood_chart"
@@ -76,14 +101,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/card_chart_container" />
 
-    <!-- Share Button (moved up) -->
+    <!-- Share Button -->
     <Button
         android:id="@+id/button_share"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="24dp"
         android:background="@drawable/gradient_card_mood"
         android:text="Share Mood Summary"
         android:textAllCaps="false"
@@ -94,16 +119,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- RecyclerView (with proper bottom constraint) -->
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_moods"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
         android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
-        android:paddingBottom="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toTopOf="@id/button_share"
         app:layout_constraintEnd_toEndOf="parent"
@@ -127,18 +152,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:text="😊"
-            android:textSize="100sp"
-            android:layout_marginBottom="16dp" />
+            android:textSize="100sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
             android:text="No mood entries yet"
             android:textColor="@color/white"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -149,18 +174,5 @@
             android:textSize="16sp" />
 
     </LinearLayout>
-
-    <!-- FAB -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_add_mood"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="80dp"
-        android:src="@drawable/ic_add"
-        app:backgroundTint="#FFC107"
-        app:tint="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,16 +7,10 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
-
-    <!-- Notification Permissions (Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-
-    <!-- Service Permissions -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
-
-    <!-- Alarm Permissions (Android 12+) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
@@ -46,28 +40,26 @@
             </intent-filter>
         </activity>
 
-        <!-- Onboarding Screen 1 -->
+        <!-- Onboarding Screens -->
         <activity
             android:name=".OnboardingScreen1Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
-        <!-- Onboarding Screen 2 -->
         <activity
             android:name=".OnboardingScreen2Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
-        <!-- Onboarding Screen 3 -->
         <activity
             android:name=".OnboardingScreen3Activity"
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/OnboardingActivityTheme" />
 
-        <!-- Main Activity - Hosts all fragments including HomeFragment -->
+        <!-- Main Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
@@ -92,7 +84,11 @@
         <receiver
             android:name=".HydrationActionReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false">
+            <intent-filter>
+                <action android:name="DRINK_WATER" />
+            </intent-filter>
+        </receiver>
 
         <!-- Widget -->
         <receiver
@@ -107,7 +103,7 @@
                 android:resource="@xml/wellness_widget_info" />
         </receiver>
 
-        <!-- Provider for FileProvider -->
+        <!-- FileProvider -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

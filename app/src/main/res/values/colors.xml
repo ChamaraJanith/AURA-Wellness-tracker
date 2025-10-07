@@ -92,6 +92,8 @@
 
     <!-- Ripple Effect -->
     <color name="ripple_color">#33FFFFFF</color>
+    <color name="orange_accent">#FF9800</color>
+
 
     <color name="background_color">#F5F7FA</color>
     <color name="calories_bg">#FFF5E1</color>

@@ -2,55 +2,56 @@ package com.example.wellnesstracker
 
 import android.Manifest
 import android.app.AlertDialog
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
+import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import java.text.DecimalFormat
+import com.example.wellnesstracker.services.StepCounterService
+import com.example.wellnesstracker.utils.SharedPreferencesHelper
 
-class StepsFragment : Fragment(), SensorEventListener {
+class StepsFragment : Fragment() {
 
-    private val viewModel: HomeViewModel by activityViewModels()
-
-    // UI Components
+    private lateinit var prefsHelper: SharedPreferencesHelper
     private lateinit var textStepCount: TextView
     private lateinit var textProgressPercentage: TextView
     private lateinit var textGoalInfo: TextView
     private lateinit var textDistance: TextView
     private lateinit var textCalories: TextView
-    private lateinit var textRealtimeStatus: TextView
     private lateinit var progressSteps: ProgressBar
     private lateinit var buttonAddSteps: Button
     private lateinit var buttonSetGoal: Button
     private lateinit var buttonReset: Button
-    private lateinit var achievementBanner: View
+    private lateinit var achievementBanner: androidx.cardview.widget.CardView
+    private lateinit var textRealtimeStatus: TextView
     private lateinit var statusIndicator: View
 
-    // Sensor components
-    private var sensorManager: SensorManager? = null
-    private var stepDetectorSensor: Sensor? = null
-    private var stepCounterSensor: Sensor? = null
-    private var isListening = false
-    private var lastStepCount = 0
-    private var sensorInitialSteps = 0
-    private var isFirstSensorReading = true
+    private var stepUpdateReceiver: BroadcastReceiver? = null
+    private var updateHandler: android.os.Handler? = null
+    private var updateRunnable: Runnable? = null
+
+    private val NOTIFICATION_PERMISSION_CODE = 1001
+    private var hasSensorSupport = false
 
     companion object {
-        private const val PERMISSION_REQUEST_ACTIVITY_RECOGNITION = 100
+        const val STEP_CHANNEL_ID = "step_counter_channel"
+        const val GOAL_CHANNEL_ID = "goal_achievement_channel"
     }
 
     override fun onCreateView(
@@ -64,10 +65,24 @@ class StepsFragment : Fragment(), SensorEventListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        initializeViews(view)
-        setupObservers()
-        setupRealTimeStepDetector()
-        setupClickListeners()
+        try {
+            prefsHelper = SharedPreferencesHelper(requireContext())
+            checkSensorSupport()
+            createNotificationChannels()
+            initializeViews(view)
+            setupStepCounter()
+            updateUI()
+            updateSensorStatus()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun checkSensorSupport() {
+        val sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        hasSensorSupport = stepSensor != null
     }
 
     private fun initializeViews(view: View) {
@@ -77,189 +92,102 @@ class StepsFragment : Fragment(), SensorEventListener {
             textGoalInfo = view.findViewById(R.id.text_goal_info)
             textDistance = view.findViewById(R.id.text_distance)
             textCalories = view.findViewById(R.id.text_calories)
-            textRealtimeStatus = view.findViewById(R.id.text_realtime_status)
             progressSteps = view.findViewById(R.id.progress_steps)
             buttonAddSteps = view.findViewById(R.id.button_add_steps)
             buttonSetGoal = view.findViewById(R.id.button_set_goal)
             buttonReset = view.findViewById(R.id.button_reset)
             achievementBanner = view.findViewById(R.id.achievement_banner)
+            textRealtimeStatus = view.findViewById(R.id.text_realtime_status)
             statusIndicator = view.findViewById(R.id.status_indicator)
+
+            buttonAddSteps.setOnClickListener { showAddStepsDialog() }
+            buttonSetGoal.setOnClickListener { showSetGoalDialog() }
+            buttonReset.setOnClickListener { showResetDialog() }
         } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error initializing views: ${e.message}", Toast.LENGTH_LONG).show()
+            e.printStackTrace()
         }
     }
 
-    private fun setupObservers() {
-        // Observe steps data from ViewModel
-        viewModel.stepsData.observe(viewLifecycleOwner) { steps ->
-            updateStepsDisplay(steps.current, steps.goal)
-        }
-
-        // Observe distance
-        viewModel.distance.observe(viewLifecycleOwner) { distance ->
-            val df = DecimalFormat("#.##")
-            textDistance.text = "${df.format(distance)} km"
-        }
-
-        // Observe calories
-        viewModel.caloriesData.observe(viewLifecycleOwner) { calories ->
-            textCalories.text = "${calories.current} cal"
-        }
-    }
-
-    private fun setupClickListeners() {
-        buttonAddSteps.setOnClickListener { showAddStepsDialog() }
-        buttonSetGoal.setOnClickListener { showSetGoalDialog() }
-        buttonReset.setOnClickListener { showResetConfirmation() }
-    }
-
-    private fun setupRealTimeStepDetector() {
+    private fun updateSensorStatus() {
         try {
-            sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-
-            stepDetectorSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR)
-            stepCounterSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-            if (stepDetectorSensor == null && stepCounterSensor == null) {
-                updateSensorStatus(false)
-                return
-            }
-
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACTIVITY_RECOGNITION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                requestPermissions(
-                    arrayOf(Manifest.permission.ACTIVITY_RECOGNITION),
-                    PERMISSION_REQUEST_ACTIVITY_RECOGNITION
-                )
-            } else {
-                startRealTimeStepCounting()
-            }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error setting up sensors: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun startRealTimeStepCounting() {
-        try {
-            var sensorsRegistered = 0
-
-            stepDetectorSensor?.let { sensor ->
-                val success = sensorManager?.registerListener(
-                    this,
-                    sensor,
-                    SensorManager.SENSOR_DELAY_FASTEST
-                )
-                if (success == true) {
-                    sensorsRegistered++
-                }
-            }
-
-            stepCounterSensor?.let { sensor ->
-                val success = sensorManager?.registerListener(
-                    this,
-                    sensor,
-                    SensorManager.SENSOR_DELAY_NORMAL
-                )
-                if (success == true) {
-                    sensorsRegistered++
-                }
-            }
-
-            if (sensorsRegistered > 0) {
-                isListening = true
-                updateSensorStatus(true)
-                Toast.makeText(
-                    requireContext(),
-                    "Real-time step counting started!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                updateSensorStatus(false)
-            }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error starting step counting: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun updateSensorStatus(isActive: Boolean) {
-        try {
-            if (isActive) {
+            if (hasSensorSupport) {
                 textRealtimeStatus.text = "Real-time counting active"
-                textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
-                statusIndicator.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+                textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.green_accent))
+                statusIndicator.setBackgroundResource(R.drawable.status_indicator_active)
             } else {
-                textRealtimeStatus.text = "Sensor not available"
-                textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
-                statusIndicator.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.holo_red_dark))
-            }
-        } catch (e: Exception) {
-            // Ignore if views not available
-        }
-    }
+                textRealtimeStatus.text = "Sensor unavailable - Use manual mode"
+                textRealtimeStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.orange_accent))
+                statusIndicator.setBackgroundResource(R.drawable.status_indicator_inactive)
 
-    private fun stopRealTimeStepCounting() {
-        if (isListening) {
-            try {
-                sensorManager?.unregisterListener(this)
-                isListening = false
-                updateSensorStatus(false)
-            } catch (e: Exception) {
-                // Ignore errors during cleanup
-            }
-        }
-    }
-
-    override fun onSensorChanged(event: SensorEvent?) {
-        try {
-            event?.let { sensorEvent ->
-                when (sensorEvent.sensor.type) {
-                    Sensor.TYPE_STEP_DETECTOR -> {
-                        handleStepDetected()
-                    }
-                    Sensor.TYPE_STEP_COUNTER -> {
-                        handleStepCounter(sensorEvent.values[0].toInt())
-                    }
+                if (!prefsHelper.hasShownSensorWarning()) {
+                    showSensorUnavailableDialog()
+                    prefsHelper.setShownSensorWarning(true)
                 }
             }
         } catch (e: Exception) {
-            // Ignore sensor errors
+            e.printStackTrace()
         }
     }
 
-    private fun handleStepDetected() {
+    private fun showSensorUnavailableDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("⚠️ Step Sensor Unavailable")
+            .setMessage("Your device doesn't have a step counter sensor. You can still track steps manually using the 'Add Steps' button.\n\nThis is common on emulators and some devices.")
+            .setPositiveButton("Got it") { _, _ -> }
+            .setIcon(R.drawable.ic_steps)
+            .show()
+    }
+
+    private fun setupStepCounter() {
+        if (hasSensorSupport) {
+            checkNotificationPermissionAndStartService()
+        } else {
+            showManualModeNotification()
+        }
+    }
+
+    private fun showManualModeNotification() {
         try {
-            val currentSteps = viewModel.stepsData.value?.current ?: 0
-            viewModel.updateSteps(currentSteps + 1)
+            val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+            if (notificationManager != null) {
+                val notification = NotificationCompat.Builder(requireContext(), STEP_CHANNEL_ID)
+                    .setContentTitle("📱 Manual Mode Active")
+                    .setContentText("Sensor not available. Use 'Add Steps' button to track.")
+                    .setSmallIcon(R.drawable.ic_steps)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .build()
+
+                notificationManager.notify(2001, notification)
+            }
         } catch (e: Exception) {
-            // Ignore if context not available
+            e.printStackTrace()
         }
     }
 
-    private fun handleStepCounter(totalSteps: Int) {
+    private fun checkNotificationPermissionAndStartService() {
         try {
-            if (isFirstSensorReading) {
-                sensorInitialSteps = totalSteps
-                lastStepCount = totalSteps
-                isFirstSensorReading = false
-                return
-            }
-
-            val newSteps = totalSteps - lastStepCount
-            if (newSteps > 0 && newSteps < 100) { // Validate reasonable step increment
-                val currentSteps = viewModel.stepsData.value?.current ?: 0
-                viewModel.updateSteps(currentSteps + newSteps)
-                lastStepCount = totalSteps
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (ContextCompat.checkSelfPermission(
+                        requireContext(),
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    requestPermissions(
+                        arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                        NOTIFICATION_PERMISSION_CODE
+                    )
+                } else {
+                    startStepCounterService()
+                }
+            } else {
+                startStepCounterService()
             }
         } catch (e: Exception) {
-            // Ignore if context not available
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Permission error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Handle sensor accuracy changes if needed
     }
 
     override fun onRequestPermissionsResult(
@@ -268,180 +196,369 @@ class StepsFragment : Fragment(), SensorEventListener {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-
-        when (requestCode) {
-            PERMISSION_REQUEST_ACTIVITY_RECOGNITION -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    startRealTimeStepCounting()
-                } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Permission required for real-time step counting",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-            }
-        }
-    }
-
-    private fun updateStepsDisplay(count: Int, goal: Int) {
-        try {
-            // Update main step count
-            textStepCount.text = formatNumber(count)
-
-            // Update progress percentage
-            val percentage = if (goal > 0) (count * 100) / goal else 0
-            textProgressPercentage.text = "$percentage%"
-
-            // Update goal info
-            textGoalInfo.text = "Goal: ${formatNumber(goal)} steps"
-
-            // Update progress bar
-            progressSteps.max = goal
-            progressSteps.progress = minOf(count, goal)
-
-            // Check if goal is reached
-            if (count >= goal && count > 0) {
-                showAchievementBanner()
+        if (requestCode == NOTIFICATION_PERMISSION_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startStepCounterService()
             } else {
-                hideAchievementBanner()
+                Toast.makeText(
+                    requireContext(),
+                    "Notification permission required for step tracking",
+                    Toast.LENGTH_LONG
+                ).show()
             }
-
-        } catch (e: Exception) {
-            // Handle display update errors gracefully
         }
     }
 
-    private fun showAchievementBanner() {
+    private fun startStepCounterService() {
         try {
-            achievementBanner.visibility = View.VISIBLE
+            StepCounterService.startService(requireContext())
+            showStepCounterActivatedNotification()
         } catch (e: Exception) {
-            // Ignore if view not available
+            e.printStackTrace()
+            Toast.makeText(requireContext(), "Service error: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun hideAchievementBanner() {
+    private fun showStepCounterActivatedNotification() {
         try {
-            achievementBanner.visibility = View.GONE
+            val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+            if (notificationManager != null) {
+                val notification = NotificationCompat.Builder(requireContext(), STEP_CHANNEL_ID)
+                    .setContentTitle("✓ Step Counter Activated")
+                    .setContentText("Tracking your steps in the background")
+                    .setSmallIcon(R.drawable.ic_steps)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setAutoCancel(true)
+                    .build()
+
+                notificationManager.notify(2001, notification)
+            }
         } catch (e: Exception) {
-            // Ignore if view not available
-        }
-    }
-
-    private fun formatNumber(number: Int): String {
-        return String.format("%,d", number)
-    }
-
-    private fun showAddStepsDialog() {
-        try {
-            val dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_add_steps, null)
-            val editSteps = dialogView.findViewById<EditText>(R.id.edit_steps)
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Add Steps Manually")
-                .setView(dialogView)
-                .setPositiveButton("Add") { _, _ ->
-                    val stepsText = editSteps.text.toString().trim()
-                    if (stepsText.isNotEmpty()) {
-                        val steps = stepsText.toIntOrNull() ?: 0
-                        if (steps > 0) {
-                            val currentSteps = viewModel.stepsData.value?.current ?: 0
-                            viewModel.updateSteps(currentSteps + steps)
-                            Toast.makeText(
-                                requireContext(),
-                                "Added ${formatNumber(steps)} steps!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error showing dialog", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun showSetGoalDialog() {
-        try {
-            val dialogView = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_set_goal, null)
-            val editGoal = dialogView.findViewById<EditText>(R.id.edit_goal)
-
-            val currentGoal = viewModel.stepsData.value?.goal ?: 10000
-            editGoal.setText(currentGoal.toString())
-
-            AlertDialog.Builder(requireContext())
-                .setTitle("Set Daily Goal")
-                .setView(dialogView)
-                .setPositiveButton("Save") { _, _ ->
-                    val goalText = editGoal.text.toString().trim()
-                    if (goalText.isNotEmpty()) {
-                        val goal = goalText.toIntOrNull() ?: 10000
-                        if (goal > 0) {
-                            viewModel.updateStepsGoal(goal)
-                            Toast.makeText(
-                                requireContext(),
-                                "Daily goal set to ${formatNumber(goal)} steps!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error showing dialog", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun showResetConfirmation() {
-        try {
-            AlertDialog.Builder(requireContext())
-                .setTitle("Reset Steps")
-                .setMessage("Are you sure you want to reset your step count for today?")
-                .setPositiveButton("Reset") { _, _ ->
-                    viewModel.updateSteps(0)
-                    isFirstSensorReading = true
-                    Toast.makeText(
-                        requireContext(),
-                        "Steps reset for today",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                .setNegativeButton("Cancel", null)
-                .show()
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error showing dialog", Toast.LENGTH_SHORT).show()
+            e.printStackTrace()
         }
     }
 
     override fun onResume() {
         super.onResume()
         try {
-            if (!isListening && (stepDetectorSensor != null || stepCounterSensor != null)) {
-                if (ContextCompat.checkSelfPermission(
-                        requireContext(),
-                        Manifest.permission.ACTIVITY_RECOGNITION
-                    ) == PackageManager.PERMISSION_GRANTED
-                ) {
-                    startRealTimeStepCounting()
-                }
-            }
-            viewModel.refreshData()
+            updateUI()
+            registerStepUpdateReceiver()
+            startPeriodicUpdate()
         } catch (e: Exception) {
-            // Handle resume errors gracefully
+            e.printStackTrace()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        // Keep counting in background for real-time detection
+        try {
+            unregisterStepUpdateReceiver()
+            stopPeriodicUpdate()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        stopRealTimeStepCounting()
+    private fun registerStepUpdateReceiver() {
+        try {
+            stepUpdateReceiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context?, intent: Intent?) {
+                    if (intent?.action == StepCounterService.STEP_UPDATE_ACTION) {
+                        val steps = intent.getIntExtra(StepCounterService.EXTRA_STEP_COUNT, 0)
+                        updateUIWithSteps(steps)
+                    }
+                }
+            }
+
+            val filter = IntentFilter(StepCounterService.STEP_UPDATE_ACTION)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                requireContext().registerReceiver(stepUpdateReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+            } else {
+                requireContext().registerReceiver(stepUpdateReceiver, filter)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun unregisterStepUpdateReceiver() {
+        try {
+            stepUpdateReceiver?.let {
+                requireContext().unregisterReceiver(it)
+                stepUpdateReceiver = null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startPeriodicUpdate() {
+        updateHandler = android.os.Handler(android.os.Looper.getMainLooper())
+        updateRunnable = object : Runnable {
+            override fun run() {
+                updateUI()
+                updateHandler?.postDelayed(this, 1000)
+            }
+        }
+        updateHandler?.post(updateRunnable!!)
+    }
+
+    private fun stopPeriodicUpdate() {
+        updateRunnable?.let {
+            updateHandler?.removeCallbacks(it)
+        }
+        updateHandler = null
+        updateRunnable = null
+    }
+
+    private fun updateUI() {
+        try {
+            val steps = prefsHelper.getSteps()
+            updateUIWithSteps(steps)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun updateUIWithSteps(steps: Int) {
+        try {
+            val goal = prefsHelper.getStepsGoal()
+            val percentage = if (goal > 0) ((steps.toFloat() / goal) * 100).toInt() else 0
+
+            textStepCount.text = steps.toString()
+            textProgressPercentage.text = "$percentage%"
+            textGoalInfo.text = "Goal: ${goal.formatNumber()} steps"
+
+            progressSteps.max = goal
+            progressSteps.progress = steps
+
+            val distance = steps * 0.0008
+            textDistance.text = String.format("%.2f km", distance)
+
+            val calories = (steps * 0.04).toInt()
+            textCalories.text = "$calories cal"
+
+            if (prefsHelper.isGoalAchievedToday()) {
+                achievementBanner.visibility = View.VISIBLE
+            } else {
+                achievementBanner.visibility = View.GONE
+            }
+
+            checkGoalAchievement(steps, goal)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun checkGoalAchievement(steps: Int, goal: Int) {
+        try {
+            if (steps >= goal && !prefsHelper.isGoalAchievedToday()) {
+                prefsHelper.setGoalAchievedToday(true)
+                showGoalAchievedNotification(steps)
+                vibratePhone()
+                achievementBanner.visibility = View.VISIBLE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun showGoalAchievedNotification(steps: Int) {
+        try {
+            val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+            if (notificationManager != null) {
+                val notification = NotificationCompat.Builder(requireContext(), GOAL_CHANNEL_ID)
+                    .setContentTitle("🎉 Goal Achieved!")
+                    .setContentText("Congratulations! You reached $steps steps today!")
+                    .setSmallIcon(R.drawable.ic_trophy)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true)
+                    .setVibrate(longArrayOf(0, 500, 200, 500, 200, 500))
+                    .build()
+
+                notificationManager.notify(2002, notification)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun vibratePhone() {
+        try {
+            val vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+
+            if (vibrator?.hasVibrator() == true) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val effect = VibrationEffect.createOneShot(3000, VibrationEffect.DEFAULT_AMPLITUDE)
+                    vibrator.vibrate(effect)
+                } else {
+                    @Suppress("DEPRECATION")
+                    vibrator.vibrate(3000)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun vibrateOnSuccess() {
+        try {
+            val vibrator = requireContext().getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+
+            if (vibrator?.hasVibrator() == true) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val pattern = longArrayOf(0, 100, 100, 200)
+                    val effect = VibrationEffect.createWaveform(pattern, -1)
+                    vibrator.vibrate(effect)
+                } else {
+                    @Suppress("DEPRECATION")
+                    val pattern = longArrayOf(0, 100, 100, 200)
+                    vibrator.vibrate(pattern, -1)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun createNotificationChannels() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+                if (notificationManager != null) {
+                    val stepChannel = NotificationChannel(
+                        STEP_CHANNEL_ID,
+                        "Step Counter",
+                        NotificationManager.IMPORTANCE_DEFAULT
+                    ).apply {
+                        description = "Notifications for step counter activation"
+                        enableVibration(false)
+                    }
+
+                    val goalChannel = NotificationChannel(
+                        GOAL_CHANNEL_ID,
+                        "Goal Achievements",
+                        NotificationManager.IMPORTANCE_HIGH
+                    ).apply {
+                        description = "Notifications when you achieve your daily goal"
+                        enableVibration(true)
+                        vibrationPattern = longArrayOf(0, 500, 200, 500, 200, 500)
+                    }
+
+                    notificationManager.createNotificationChannel(stepChannel)
+                    notificationManager.createNotificationChannel(goalChannel)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun showAddStepsDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_add_steps, null)
+
+        val editSteps = dialogView.findViewById<EditText>(R.id.edit_steps)
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Add Steps Manually")
+            .setView(dialogView)
+            .setPositiveButton("Add") { _, _ ->
+                val steps = editSteps.text.toString().toIntOrNull() ?: 0
+                if (steps > 0) {
+                    val currentSteps = prefsHelper.getSteps()
+                    prefsHelper.setSteps(currentSteps + steps)
+                    updateUI()
+                    vibrateOnSuccess()
+                    Toast.makeText(
+                        requireContext(),
+                        "✓ $steps steps added!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showSetGoalDialog() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_set_goal, null)
+
+        val editGoal = dialogView.findViewById<EditText>(R.id.edit_goal)
+        editGoal.setText(prefsHelper.getStepsGoal().toString())
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Set Daily Goal")
+            .setView(dialogView)
+            .setPositiveButton("Save") { _, _ ->
+                val goal = editGoal.text.toString().toIntOrNull() ?: 10000
+                if (goal > 0) {
+                    prefsHelper.setStepsGoal(goal)
+                    updateUI()
+                    Toast.makeText(
+                        requireContext(),
+                        "Goal set to $goal steps",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun showResetDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Reset Steps")
+            .setMessage("Are you sure you want to reset today's steps?")
+            .setPositiveButton("Reset") { _, _ ->
+                prefsHelper.resetSteps()
+                prefsHelper.setGoalAchievedToday(false)
+                prefsHelper.setFirstTime(true)
+
+                updateUI()
+                updateStepNotification(0)
+
+                Toast.makeText(requireContext(), "✓ Steps reset!", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun updateStepNotification(steps: Int) {
+        try {
+            val notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+            if (notificationManager != null) {
+                val goal = prefsHelper.getStepsGoal()
+
+                val intent = Intent(requireContext(), MainActivity::class.java)
+                val pendingIntent = PendingIntent.getActivity(
+                    requireContext(), 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                val notification = NotificationCompat.Builder(requireContext(), StepCounterService.CHANNEL_ID)
+                    .setContentTitle("Steps: $steps / $goal")
+                    .setContentText("0% of daily goal • Keep moving!")
+                    .setSmallIcon(R.drawable.ic_steps)
+                    .setContentIntent(pendingIntent)
+                    .setOngoing(true)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .setProgress(100, 0, false)
+                    .build()
+
+                notificationManager.notify(StepCounterService.NOTIFICATION_ID, notification)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun Int.formatNumber(): String {
+        return String.format("%,d", this)
     }
 }

@@ -23,6 +23,8 @@ import com.example.wellnesstracker.adapters.MoodAdapter
 import com.example.wellnesstracker.models.MoodEntry
 import com.example.wellnesstracker.utils.SharedPreferencesHelper
 import com.example.wellnesstracker.utils.DateUtils
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MoodFragment : Fragment() {
 
@@ -94,17 +96,20 @@ class MoodFragment : Fragment() {
                 position = XAxis.XAxisPosition.BOTTOM
                 setDrawGridLines(false)
                 granularity = 1f
-                textSize = 12f
-                textColor = resources.getColor(R.color.colorPrimaryDark, null)
+                textSize = 10f
+                textColor = resources.getColor(R.color.white, null)
+                labelRotationAngle = -45f
             }
 
             axisLeft.apply {
-                axisMinimum = 1f
-                axisMaximum = 5f
+                axisMinimum = 0.5f
+                axisMaximum = 5.5f
                 granularity = 1f
                 setDrawGridLines(true)
+                gridColor = resources.getColor(R.color.white, null)
+                gridLineWidth = 0.5f
                 textSize = 12f
-                textColor = resources.getColor(R.color.colorPrimaryDark, null)
+                textColor = resources.getColor(R.color.white, null)
                 valueFormatter = object : ValueFormatter() {
                     override fun getFormattedValue(value: Float): String {
                         return when (value.toInt()) {
@@ -122,9 +127,9 @@ class MoodFragment : Fragment() {
             axisRight.isEnabled = false
             legend.isEnabled = true
             legend.textSize = 12f
-            legend.textColor = resources.getColor(R.color.colorPrimaryDark, null)
+            legend.textColor = resources.getColor(R.color.white, null)
 
-            setBackgroundColor(resources.getColor(android.R.color.white, null))
+            setBackgroundColor(resources.getColor(android.R.color.transparent, null))
             setPadding(10, 10, 10, 10)
         }
     }
@@ -152,43 +157,65 @@ class MoodFragment : Fragment() {
     }
 
     private fun updateChart() {
-        val lastSevenDays = DateUtils.getLastSevenDays()
+        // Get all mood entries sorted by timestamp (oldest first)
+        val sortedMoods = moodEntries.sortedBy { it.timestamp }
+
         val entries = mutableListOf<Entry>()
         val labels = mutableListOf<String>()
 
-        lastSevenDays.forEachIndexed { index, date ->
-            val dayMoods = moodEntries.filter { it.date == date }
-            val avgMood = if (dayMoods.isNotEmpty()) {
-                dayMoods.map { MoodEntry.getMoodValue(it.emoji) }.average().toFloat()
-            } else {
-                Float.NaN
-            }
+        // Show each mood entry individually
+        sortedMoods.forEachIndexed { index, moodEntry ->
+            val moodValue = MoodEntry.getMoodValue(moodEntry.emoji)
+            entries.add(Entry(index.toFloat(), moodValue.toFloat()))
 
-            if (!avgMood.isNaN()) {
-                entries.add(Entry(index.toFloat(), avgMood))
-            }
-            labels.add(date.substring(5))
+            // Format date/time for label
+            val dateFormat = SimpleDateFormat("MMM dd\nHH:mm", Locale.getDefault())
+            labels.add(dateFormat.format(Date(moodEntry.timestamp)))
         }
 
         moodChart.clear()
 
         if (entries.isNotEmpty()) {
-            val dataSet = LineDataSet(entries, "Mood Trend").apply {
-                color = resources.getColor(R.color.colorPrimary, null)
-                setCircleColor(resources.getColor(R.color.colorPrimary, null))
-                lineWidth = 2f
-                circleRadius = 4f
+            val dataSet = LineDataSet(entries, "Mood History").apply {
+                color = resources.getColor(R.color.white, null)
+                setCircleColor(resources.getColor(R.color.white, null))
+                lineWidth = 3f
+                circleRadius = 5f
                 setDrawCircleHole(false)
-                valueTextSize = 9f
+                valueTextSize = 10f
+                valueTextColor = resources.getColor(R.color.white, null)
                 setDrawValues(true)
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+                cubicIntensity = 0.2f
+                setDrawFilled(true)
+                fillColor = resources.getColor(R.color.white, null)
+                fillAlpha = 50
+
+                // Value formatter to show mood emojis on data points
+                valueFormatter = object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        return when (value.toInt()) {
+                            1 -> "😢"
+                            2 -> "😔"
+                            3 -> "😐"
+                            4 -> "😊"
+                            5 -> "😄"
+                            else -> ""
+                        }
+                    }
+                }
             }
 
             val lineData = LineData(dataSet)
             moodChart.data = lineData
             moodChart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+            moodChart.xAxis.setLabelCount(labels.size, false)
 
             moodChart.notifyDataSetChanged()
             moodChart.invalidate()
+
+            // Animate the chart
+            moodChart.animateX(1000)
         } else {
             moodChart.clear()
             moodChart.invalidate()
