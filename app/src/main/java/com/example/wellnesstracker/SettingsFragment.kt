@@ -12,9 +12,13 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.wellnesstracker.utils.SharedPreferencesHelper
 
 class SettingsFragment : Fragment() {
+
+    // ADD THIS: Shared ViewModel to communicate with HomeFragment
+    private val homeViewModel: HomeViewModel by activityViewModels()
 
     private lateinit var prefsHelper: SharedPreferencesHelper
     private lateinit var tvUserName: TextView
@@ -112,8 +116,12 @@ class SettingsFragment : Fragment() {
                 val steps = stepsInput.text.toString().toIntOrNull() ?: 10000
                 val hydration = hydrationInput.text.toString().toIntOrNull() ?: 8
 
+                // Save to SharedPreferences
                 prefsHelper.setStepsGoal(steps)
                 prefsHelper.saveHydrationGoal(hydration)
+
+                // CRITICAL FIX: Refresh HomeViewModel to update HomeFragment immediately
+                homeViewModel.refreshData()
 
                 Toast.makeText(requireContext(), "✓ Goals updated!", Toast.LENGTH_SHORT).show()
             }
@@ -170,6 +178,9 @@ class SettingsFragment : Fragment() {
                 prefsHelper.saveMoodEntries(emptyList())
                 prefsHelper.saveHabits(emptyList())
 
+                // CRITICAL FIX: Refresh HomeViewModel after clearing data
+                homeViewModel.refreshData()
+
                 Toast.makeText(requireContext(), "✓ All data cleared!", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("Cancel", null)
@@ -194,5 +205,11 @@ class SettingsFragment : Fragment() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         requireActivity().finish()
+    }
+
+    // ADD THIS: Refresh data when fragment resumes to show latest settings
+    override fun onResume() {
+        super.onResume()
+        loadUserData()
     }
 }

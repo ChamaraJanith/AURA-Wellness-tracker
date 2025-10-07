@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.cardview.widget.CardView
@@ -236,42 +237,44 @@ class HomeFragment : Fragment() {
     private fun setupCardClickListeners() {
         try {
             cardSteps.setOnClickListener {
-                navigateToFragment(StepsFragment())
+                // Navigate using fragment transaction
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, StepsFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
 
             cardWater.setOnClickListener {
-                navigateToFragment(HydrationFragment())
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, HydrationFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
 
             cardHabits.setOnClickListener {
-                navigateToFragment(HabitsFragment())
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, HabitsFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
 
             cardMood.setOnClickListener {
-                navigateToFragment(MoodFragment())
+                // Use the actual class directly
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, MoodFragment())
+                    .addToBackStack(null)
+                    .commit()
             }
 
             cardCalories.setOnClickListener {
-                // Show toast or navigate to calories detail
-                android.widget.Toast.makeText(
+                Toast.makeText(
                     requireContext(),
                     "Calories tracking",
-                    android.widget.Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT
                 ).show()
             }
         } catch (e: Exception) {
             android.util.Log.e("HomeFragment", "Error setting up click listeners: ${e.message}")
-        }
-    }
-
-    private fun navigateToFragment(fragment: Fragment) {
-        try {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit()
-        } catch (e: Exception) {
-            android.util.Log.e("HomeFragment", "Error navigating to fragment: ${e.message}")
         }
     }
 
